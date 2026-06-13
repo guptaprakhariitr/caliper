@@ -21,8 +21,12 @@ public struct ContentView: View {
         .toolbar {
             ToolbarItemGroup {
                 Button { vm.snapEndpoints() } label: { Label("Snap", systemImage: "wand.and.stars") }
+                    .labelStyle(.titleAndIcon)
+                    .help("Snap the measurement endpoints to the nearest detected element edges")
                     .disabled(!vm.snapEnabled)
                 Toggle(isOn: $vm.snapEnabled) { Label("Edge-snap", systemImage: "ruler") }
+                    .labelStyle(.titleAndIcon)
+                    .help("Toggle automatic snapping of endpoints to element edges")
                 Spacer()
                 Text(vm.measuredLabel).font(DS.Font.mono)
             }

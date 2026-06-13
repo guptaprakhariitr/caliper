@@ -13,6 +13,7 @@
     <key>NSHighResolutionCapable</key><true/>
     <key>NSPrincipalClass</key><string>NSApplication</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
+    <key>CFBundleIconName</key><string>AppIcon</string>
     <key>LSApplicationCategoryType</key><string>public.app-category.developer-tools</string>
     <key>ITSAppUsesNonExemptEncryption</key><false/>
     <!-- The live loupe / measure feature captures the screen via ScreenCaptureKit.

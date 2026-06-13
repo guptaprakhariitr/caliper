@@ -25,7 +25,7 @@ struct CaliperApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .environmentObject(vm)
                 .onAppear {
                     AppLog.info("main window shown", category: "ui")
@@ -57,5 +57,40 @@ struct CaliperApp: App {
             .padding(24)
             .frame(width: 460)
         }
+    }
+}
+
+/// Wraps the root content and shows the first-run welcome sheet.
+private struct RootView: View {
+    @EnvironmentObject var vm: CaliperViewModel
+    @AppStorage("com.plainware.caliper.onboarding.v1") private var onboarded = false
+    @State private var showOnboarding = false
+
+    var body: some View {
+        ContentView()
+            .onAppear { if !onboarded { showOnboarding = true } }
+            .sheet(isPresented: $showOnboarding) {
+                OnboardingView(
+                    appName: "Caliper",
+                    tagline: "Measure anything on screen — pixel-perfect.",
+                    glyph: "ruler.fill",
+                    accent: Color(red: 0.55, green: 0.35, blue: 0.85),
+                    steps: [
+                        .init(systemImage: "ruler", title: "Measure with edge-snap",
+                              detail: "Drag to measure — Caliper snaps to the edges of UI elements automatically."),
+                        .init(systemImage: "magnifyingglass", title: "Loupe & color picker",
+                              detail: "Zoom into pixels and grab exact colors in multiple formats."),
+                        .init(systemImage: "lock.shield", title: "Needs Screen Recording",
+                              detail: "macOS will ask for Screen Recording permission so Caliper can read the pixels under your cursor. It all stays on your Mac."),
+                    ],
+                    primaryTitle: "Start Measuring",
+                    footnote: "Nothing is uploaded — measuring happens locally.",
+                    primaryAction: {
+                        onboarded = true; showOnboarding = false
+                        if vm.target == nil { vm.setTarget(SampleImage.make()) }
+                    },
+                    secondaryAction: { onboarded = true; showOnboarding = false }
+                )
+            }
     }
 }

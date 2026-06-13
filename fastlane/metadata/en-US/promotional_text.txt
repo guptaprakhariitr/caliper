@@ -1,0 +1,1 @@
+Measure pixels on screen with a ruler that snaps to real element edges — plus a loupe and a hex/HSL color picker. 100% on-device.

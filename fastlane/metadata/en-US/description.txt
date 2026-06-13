@@ -1,0 +1,16 @@
+Caliper is an on-screen pixel ruler, loupe and color picker for people who care about exact pixels.
+
+Draw a precise measurement guide over any window or region, magnify pixels with a loupe, and read colors back as hex and HSL. Caliper's standout feature is automatic edge-snap: a real on-device edge detector finds element boundaries so your measurement endpoints lock to the actual edges — not "close enough."
+
+EVERYTHING ON-DEVICE
+Caliper reads the area under the ruler via ScreenCaptureKit using the Screen Recording permission you grant on first use. Edge detection and color sampling run entirely on your Mac. Nothing is uploaded, and the shipped build contains no telemetry.
+
+FEATURES
+• Transparent overlay ruler with pixel-perfect width × height and a live badge
+• Auto edge-snap — Sobel gradient edge detection snaps endpoints to element boundaries
+• Loupe magnifier with a zoomed pixel grid and crosshair for sub-pixel placement
+• Color picker with hex (#RRGGBB) and HSL readouts
+• Works on any window or screen region
+• Adjustable endpoints with visible snap guides
+
+Free and open source.

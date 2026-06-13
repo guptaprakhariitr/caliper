@@ -4,6 +4,7 @@ import CoreGraphics
 import CaliperUI
 import RemoteConfigKit
 import LicenseKit
+import VersionGateKit
 import CommonUI
 import LogKit
 
@@ -12,6 +13,8 @@ struct CaliperApp: App {
     @StateObject private var vm = CaliperViewModel()
     @StateObject private var remote = RemoteConfig() // flags OFF by default
     @StateObject private var license = LicenseStore(verifier: nil, productID: "caliper")
+    @StateObject private var versionGate = VersionGate.fromBundle(appKey: "caliper")
+        ?? VersionGate(projectId: "", apiKey: "", appKey: "caliper", currentBuild: 0, currentVersion: "0")
 
     init() {
         AppLog.bootstrap(appName: "Caliper",
@@ -27,6 +30,7 @@ struct CaliperApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(vm)
+                .versionGate(versionGate)
                 .onAppear {
                     AppLog.info("main window shown", category: "ui")
                     if vm.target == nil { vm.setTarget(SampleImage.make()) }
@@ -34,6 +38,7 @@ struct CaliperApp: App {
                         await remote.refresh()
                         AppLog.info("remote config refreshed — paid=\(remote.paidEnabled) updates=\(remote.updatesEnabled)", category: "config")
                     }
+                    Task { await versionGate.check() }
                 }
         }
         .windowStyle(.titleBar)

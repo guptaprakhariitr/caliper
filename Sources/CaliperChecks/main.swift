@@ -68,7 +68,7 @@ MainActor.assumeIsolated {
     let marketing = ZStack {
         LinearGradient(colors: [Color(white: 0.10), Color(white: 0.04)], startPoint: .top, endPoint: .bottom)
         VStack(spacing: 24) {
-            Text("Caliper").font(.system(size: 60, weight: .bold))
+            Text("Pica").font(.system(size: 60, weight: .bold))
                 .foregroundStyle(.white)
             Text("Ruler · Loupe · Color picker — with auto edge-snap.")
                 .font(.system(size: 26)).foregroundStyle(.white.opacity(0.8))

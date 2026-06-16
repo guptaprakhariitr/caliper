@@ -38,7 +38,7 @@ public struct ContentView: View {
     private var controls: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.lg) {
-                Text("Caliper").font(DS.Font.display)
+                Text("Pica").font(DS.Font.display)
                 Text("Measure, zoom and pick colors on screen.")
                     .font(DS.Font.caption).foregroundStyle(DS.Color.secondaryLabel)
 

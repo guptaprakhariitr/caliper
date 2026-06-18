@@ -7,6 +7,7 @@ import LicenseKit
 import VersionGateKit
 import CommonUI
 import LogKit
+import UniformTypeIdentifiers
 
 @main
 struct CaliperApp: App {
@@ -44,6 +45,7 @@ struct CaliperApp: App {
         .windowStyle(.titleBar)
         .commands {
             CommandGroup(replacing: .newItem) {
+                Button("Open Screenshot…") { openImage() }.keyboardShortcut("o")
                 Button("Load Sample UI") { vm.setTarget(SampleImage.make()) }.keyboardShortcut("n")
             }
             CommandGroup(after: .toolbar) {
@@ -63,12 +65,24 @@ struct CaliperApp: App {
             .frame(width: 460)
         }
     }
+
+    /// Open an image via NSOpenPanel and load it as the measurement target (⌘O).
+    private func openImage() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.png, .jpeg, .tiff, .image]
+        panel.allowsMultipleSelection = false
+        panel.canChooseDirectories = false
+        panel.message = "Choose a screenshot or UI image to measure"
+        if panel.runModal() == .OK, let url = panel.url, let img = NSImage(contentsOf: url) {
+            vm.setTarget(img)
+        }
+    }
 }
 
 /// Wraps the root content and shows the first-run welcome sheet.
 private struct RootView: View {
     @EnvironmentObject var vm: CaliperViewModel
-    @AppStorage("com.plainware.caliper.onboarding.v1") private var onboarded = false
+    @AppStorage("com.plainware.caliper.onboarding.v2") private var onboarded = false
     @State private var showOnboarding = false
 
     var body: some View {
@@ -81,12 +95,12 @@ private struct RootView: View {
                     glyph: "ruler.fill",
                     accent: Color(red: 0.55, green: 0.35, blue: 0.85),
                     steps: [
-                        .init(systemImage: "ruler", title: "Measure with edge-snap",
-                              detail: "Drag to measure — PicaMac snaps to the edges of UI elements automatically."),
-                        .init(systemImage: "magnifyingglass", title: "Loupe & color picker",
-                              detail: "Zoom into pixels and grab exact colors in multiple formats."),
-                        .init(systemImage: "lock.shield", title: "Needs Screen Recording",
-                              detail: "macOS will ask for Screen Recording permission so PicaMac can read the pixels under your cursor. It all stays on your Mac."),
+                        .init(systemImage: "photo.badge.plus", title: "Load a screenshot",
+                              detail: "Drag a screenshot onto the canvas, or click Open (⌘O). Press ⌘N to try a sample."),
+                        .init(systemImage: "ruler", title: "Drag to measure",
+                              detail: "Drag the corner handles on the canvas — endpoints snap to real element edges automatically. Width and height update live."),
+                        .init(systemImage: "eyedropper.halffull", title: "Read the color",
+                              detail: "The color under your measurement shows as hex and HSL — ready to copy into your code."),
                     ],
                     primaryTitle: "Start Measuring",
                     footnote: "Nothing is uploaded — measuring happens locally.",

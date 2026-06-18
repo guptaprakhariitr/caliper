@@ -7,6 +7,9 @@ import EdgeEngine
 public struct ContentView: View {
     @EnvironmentObject var vm: CaliperViewModel
     @State private var isDropTargeted = false
+    @State private var moveOrigin: (x: Int, y: Int, w: Int, h: Int)? = nil
+    @State private var activeDrag: DragKind? = nil
+    private enum DragKind { case left, right, top, bottom, move }
 
     public init() {}
 
@@ -135,6 +138,7 @@ public struct ContentView: View {
                             .offset(x: ox, y: oy)
                         overlay(scale: scale, ox: ox, oy: oy, imgW: imgW, imgH: imgH)
                     }
+                    .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
                 }
                 .padding(DS.Space.lg)
             } else {
@@ -232,10 +236,22 @@ public struct ContentView: View {
         let yB = oy + CGFloat(max(vm.startY, vm.endY)) * scale
         let yMid = (yA + yB) / 2
         let xMid = (x0 + x1) / 2
+        let handles = [CGPoint(x: x0, y: yMid), CGPoint(x: x1, y: yMid),
+                       CGPoint(x: xMid, y: yA), CGPoint(x: xMid, y: yB)]
 
-        // Convert a view-space coordinate to image px, clamped to the image bounds.
         func imgX(_ vx: CGFloat) -> Int { Int(((vx - ox) / scale).rounded()).clamped(to: 0...Int(imgW)) }
         func imgY(_ vy: CGFloat) -> Int { Int(((vy - oy) / scale).rounded()).clamped(to: 0...Int(imgH)) }
+
+        // Decide what a press near `p` grabs: an edge handle, the box interior, or nothing.
+        func hit(_ p: CGPoint) -> DragKind? {
+            let t: CGFloat = 26
+            if hypot(p.x - x0, p.y - yMid) < t { return .left }
+            if hypot(p.x - x1, p.y - yMid) < t { return .right }
+            if hypot(p.x - xMid, p.y - yA) < t { return .top }
+            if hypot(p.x - xMid, p.y - yB) < t { return .bottom }
+            if p.x >= x0 - t && p.x <= x1 + t && p.y >= yA - t && p.y <= yB + t { return .move }
+            return nil
+        }
 
         return ZStack(alignment: .topLeading) {
             // Snap guides
@@ -243,51 +259,65 @@ public struct ContentView: View {
                 Rectangle().fill(DS.Color.accent.opacity(0.25)).frame(width: 1)
                     .frame(maxHeight: .infinity).offset(x: ox + CGFloat(gx) * scale)
             }
-
-            // Measured rectangle outline
-            Rectangle()
-                .strokeBorder(DS.Color.accent.opacity(0.6), lineWidth: 1)
-                .frame(width: x1 - x0, height: yB - yA)
-                .offset(x: x0, y: yA)
-
-            // Measurement bar (kept for visual continuity)
-            Rectangle().fill(DS.Color.accent).frame(width: x1 - x0, height: 2)
-                .offset(x: x0, y: yMid)
+            // Interior move affordance + outline
+            Rectangle().fill(DS.Color.accent.opacity(0.08))
+                .frame(width: max(x1 - x0, 1), height: max(yB - yA, 1)).offset(x: x0, y: yA)
+            Rectangle().strokeBorder(DS.Color.accent.opacity(0.7), lineWidth: 1.5)
+                .frame(width: max(x1 - x0, 1), height: max(yB - yA, 1)).offset(x: x0, y: yA)
+            // Measurement bar + size label
+            Rectangle().fill(DS.Color.accent).frame(width: x1 - x0, height: 2).offset(x: x0, y: yMid)
             Text(vm.measuredLabel).font(DS.Font.caption).padding(4)
                 .background(DS.Color.accent, in: Capsule()).foregroundStyle(.white)
-                .offset(x: x0, y: yA - 24)
-
-            // Draggable edge handles. Each edge updates the endpoint nearest to it.
-            // Vertical edges drive startX/endX, horizontal edges drive startY/endY.
-            // Drag locations are reported in the overlay (.named) coordinate space.
-            edgeHandle(at: CGPoint(x: x0, y: yMid)) { loc in setX(imgX(loc.x), isLeft: true) }   // left edge
-            edgeHandle(at: CGPoint(x: x1, y: yMid)) { loc in setX(imgX(loc.x), isLeft: false) }  // right edge
-            edgeHandle(at: CGPoint(x: xMid, y: yA)) { loc in setY(imgY(loc.y), isTop: true) }    // top edge
-            edgeHandle(at: CGPoint(x: xMid, y: yB)) { loc in setY(imgY(loc.y), isTop: false) }   // bottom edge
+                .offset(x: x0, y: max(yA - 24, 0))
+            // Visual handle dots (interaction handled by the single gesture below)
+            ForEach(handles.indices, id: \.self) { i in
+                Circle().fill(DS.Color.accent)
+                    .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
+                    .frame(width: 14, height: 14)
+                    .offset(x: handles[i].x - 7, y: handles[i].y - 7)
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .contentShape(Rectangle())
         .coordinateSpace(name: Self.overlaySpace)
+        // ONE gesture for the whole canvas: a per-handle gesture gets cancelled when
+        // the view re-renders mid-drag, so instead we hit-test the start location and
+        // track the active target in @State for the duration of the drag.
+        .gesture(
+            DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.overlaySpace))
+                .onChanged { g in
+                    if activeDrag == nil {
+                        activeDrag = hit(g.startLocation)
+                        if activeDrag == .move {
+                            moveOrigin = (min(vm.startX, vm.endX), min(vm.startY, vm.endY),
+                                          abs(vm.endX - vm.startX), abs(vm.endY - vm.startY))
+                        }
+                    }
+                    switch activeDrag {
+                    case .left:   setX(imgX(g.location.x), isLeft: true)
+                    case .right:  setX(imgX(g.location.x), isLeft: false)
+                    case .top:    setY(imgY(g.location.y), isTop: true)
+                    case .bottom: setY(imgY(g.location.y), isTop: false)
+                    case .move:
+                        if let o = moveOrigin {
+                            let dx = Int((g.translation.width / scale).rounded())
+                            let dy = Int((g.translation.height / scale).rounded())
+                            let nx = (o.x + dx).clamped(to: 0...max(0, Int(imgW) - o.w))
+                            let ny = (o.y + dy).clamped(to: 0...max(0, Int(imgH) - o.h))
+                            vm.startX = nx; vm.endX = nx + o.w
+                            vm.startY = ny; vm.endY = ny + o.h
+                        }
+                    case .none: break
+                    }
+                }
+                .onEnded { _ in
+                    activeDrag = nil; moveOrigin = nil
+                    if vm.snapEnabled { vm.snapEndpoints() }
+                }
+        )
     }
 
     private static let overlaySpace = "caliperOverlay"
-
-    /// A small accent circle with a generous hit area. The visible dot is 12pt;
-    /// a 28pt transparent disc gives a comfortable grab target. Drag locations
-    /// are reported in the named overlay coordinate space.
-    private func edgeHandle(at point: CGPoint, onDrag: @escaping (CGPoint) -> Void) -> some View {
-        ZStack {
-            Circle().fill(Color.white.opacity(0.001)).frame(width: 28, height: 28)
-            Circle().fill(DS.Color.accent)
-                .overlay(Circle().strokeBorder(.white, lineWidth: 1.5))
-                .frame(width: 12, height: 12)
-        }
-        .contentShape(Circle())
-        .offset(x: point.x - 14, y: point.y - 14)
-        .gesture(
-            DragGesture(minimumDistance: 0, coordinateSpace: .named(Self.overlaySpace))
-                .onChanged { onDrag($0.location) }
-                .onEnded { _ in if vm.snapEnabled { vm.snapEndpoints() } }
-        )
-    }
 
     /// Update whichever X endpoint (startX/endX) is on the dragged side.
     private func setX(_ value: Int, isLeft: Bool) {

@@ -1,6 +1,6 @@
-# Contributing to Pica
+# Contributing to PicaMac
 
-Thanks for your interest! Pica is the open-source **shell** of a macOS pixel ruler, loupe and color picker. The UI, view model and app plumbing live here under the MIT license; the edge-detection/snapping **engine** is a separate proprietary module shipped as a binary in public releases (it builds from source in this private repo).
+Thanks for your interest! PicaMac is the open-source **shell** of a macOS pixel ruler, loupe and color picker. The UI, view model and app plumbing live here under the MIT license; the edge-detection/snapping **engine** is a separate proprietary module shipped as a binary in public releases (it builds from source in this private repo).
 
 ## Project layout
 
@@ -33,4 +33,4 @@ Packages/Core         shared modules (vendored)
 ## Reporting issues
 
 Open a GitHub issue with macOS version, steps, and (if relevant) the tail of
-`~/Library/Containers/com.plainware.caliper/Data/Library/Logs/Plainware/Pica.log`.
+`~/Library/Containers/com.plainware.caliper/Data/Library/Logs/Plainware/PicaMac.log`.

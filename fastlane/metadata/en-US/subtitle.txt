@@ -1,1 +1,1 @@
-Pixel ruler with auto edge-snap
+Auto edge-snap pixel ruler

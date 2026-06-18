@@ -10,7 +10,7 @@ This file is identical in all five repos. It's the **orchestration layer + share
 | Matte   | `com.plainware.glaze`   | Mac App Store          | `docs/APP_STORE_SUBMISSION.md` | none |
 | Twinned | `com.plainware.twinned` | Mac App Store          | `docs/APP_STORE_SUBMISSION.md` | none |
 | Tray    | `com.plainware.tray`    | Mac App Store          | `docs/APP_STORE_SUBMISSION.md` | Keychain (own items) |
-| Pica    | `com.plainware.caliper` | Mac App Store          | `docs/APP_STORE_SUBMISSION.md` | Screen Recording |
+| PicaMac    | `com.plainware.caliper` | Mac App Store          | `docs/APP_STORE_SUBMISSION.md` | Screen Recording |
 | Swipe   | `com.plainware.swipe`   | Notarized DMG (direct) | `docs/RELEASE.md`              | Accessibility |
 
 All five share the Firebase project **girlfeed-44107** (version-gating only — no Firebase SDK is linked; the app reads Firestore `apps/<key>` over plain HTTPS and **fails open** if offline).

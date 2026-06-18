@@ -4,7 +4,7 @@ import CoreGraphics
 import EdgeEngine
 import LogKit
 
-/// Drives the Pica overlay: holds the target image being measured, the
+/// Drives the PicaMac overlay: holds the target image being measured, the
 /// detected snap lines, the current measurement guide, and the sampled color.
 @MainActor
 public final class CaliperViewModel: ObservableObject {

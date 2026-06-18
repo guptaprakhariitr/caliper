@@ -1,6 +1,6 @@
 # Security Policy
 
-Pica processes pixels **entirely on-device**. It reads the screen region under the ruler via ScreenCaptureKit (with your granted Screen Recording permission) only to measure and pick colors; nothing is uploaded, and the shipped build contains no telemetry. The edge-detection engine works on local images.
+PicaMac processes pixels **entirely on-device**. It reads the screen region under the ruler via ScreenCaptureKit (with your granted Screen Recording permission) only to measure and pick colors; nothing is uploaded, and the shipped build contains no telemetry. The edge-detection engine works on local images.
 
 ## Reporting a vulnerability
 

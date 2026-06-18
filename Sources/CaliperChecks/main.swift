@@ -118,7 +118,7 @@ MainActor.assumeIsolated {
 
     // 2) A marketing hero (consistent Plainware theme).
     let hero = HeroShot(
-        appName: "Pica",
+        appName: "PicaMac",
         tagline: "Measure any pixel.\nSnap to real edges.",
         bullets: ["Real on-device auto edge-snap",
                   "Loupe + hex / HSL color picker",

@@ -17,7 +17,7 @@ struct CaliperApp: App {
         ?? VersionGate(projectId: "", apiKey: "", appKey: "caliper", currentBuild: 0, currentVersion: "0")
 
     init() {
-        AppLog.bootstrap(appName: "Pica",
+        AppLog.bootstrap(appName: "PicaMac",
                          version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0")
         if CGPreflightScreenCaptureAccess() {
             AppLog.info("screen recording authorization: granted", category: "lifecycle")
@@ -53,7 +53,7 @@ struct CaliperApp: App {
 
         Settings {
             VStack(spacing: 16) {
-                AboutView(appName: "Pica",
+                AboutView(appName: "PicaMac",
                           version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0",
                           tagline: "On-screen ruler, loupe & color picker with auto edge-snap.",
                           replaces: "paid pixel rulers and color pickers")
@@ -76,17 +76,17 @@ private struct RootView: View {
             .onAppear { if !onboarded { showOnboarding = true } }
             .sheet(isPresented: $showOnboarding) {
                 OnboardingView(
-                    appName: "Pica",
+                    appName: "PicaMac",
                     tagline: "Measure anything on screen — pixel-perfect.",
                     glyph: "ruler.fill",
                     accent: Color(red: 0.55, green: 0.35, blue: 0.85),
                     steps: [
                         .init(systemImage: "ruler", title: "Measure with edge-snap",
-                              detail: "Drag to measure — Pica snaps to the edges of UI elements automatically."),
+                              detail: "Drag to measure — PicaMac snaps to the edges of UI elements automatically."),
                         .init(systemImage: "magnifyingglass", title: "Loupe & color picker",
                               detail: "Zoom into pixels and grab exact colors in multiple formats."),
                         .init(systemImage: "lock.shield", title: "Needs Screen Recording",
-                              detail: "macOS will ask for Screen Recording permission so Pica can read the pixels under your cursor. It all stays on your Mac."),
+                              detail: "macOS will ask for Screen Recording permission so PicaMac can read the pixels under your cursor. It all stays on your Mac."),
                     ],
                     primaryTitle: "Start Measuring",
                     footnote: "Nothing is uploaded — measuring happens locally.",

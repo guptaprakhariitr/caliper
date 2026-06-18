@@ -2,8 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key><string>Pica</string>
-    <key>CFBundleDisplayName</key><string>Pica</string>
+    <key>CFBundleName</key><string>PicaMac</string>
+    <key>CFBundleDisplayName</key><string>PicaMac</string>
     <key>CFBundleExecutable</key><string>Caliper</string>
     <key>CFBundleIdentifier</key><string>com.plainware.caliper</string>
     <key>CFBundlePackageType</key><string>APPL</string>
@@ -19,6 +19,6 @@
     <!-- The live loupe / measure feature captures the screen via ScreenCaptureKit.
          The edge engine itself works on provided images and needs no permission. -->
     <key>NSScreenCaptureUsageDescription</key>
-    <string>Pica captures the area under the ruler so it can measure pixels and pick colors on screen.</string>
+    <string>PicaMac captures the area under the ruler so it can measure pixels and pick colors on screen.</string>
 </dict>
 </plist>

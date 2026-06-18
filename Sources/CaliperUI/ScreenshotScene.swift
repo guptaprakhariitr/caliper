@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 import DesignSystem
 
-/// An `ImageRenderer`-safe reproduction of the Pica overlay for App Store
+/// An `ImageRenderer`-safe reproduction of the PicaMac overlay for App Store
 /// screenshots: a sample app card being measured, a horizontal guide with
 /// end-caps and a "240 × 64 px" badge, dashed edge-snap highlight lines, a
 /// loupe (zoomed swatch) and a "#3B5BFF" color readout chip. Built only from

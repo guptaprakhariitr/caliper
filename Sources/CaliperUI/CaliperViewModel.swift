@@ -19,6 +19,24 @@ public final class CaliperViewModel: ObservableObject {
     @Published public var endY: Int = 90
     /// Auto edge-snap toggle.
     @Published public var snapEnabled: Bool = true
+    /// Display unit for the measurement readout.
+    @Published public var unit: MeasureUnit = .px
+
+    /// Units the measurement can be shown in. Conversions assume a 2× Retina
+    /// capture (pt = px / 2) and the CSS reference of 96 px per inch.
+    public enum MeasureUnit: String, CaseIterable, Identifiable, Sendable {
+        case px, pt, cm, `in`
+        public var id: String { rawValue }
+        public var label: String { self == .in ? "Inches (in)" : self == .cm ? "Centimeters (cm)" : self == .pt ? "Points (pt)" : "Pixels (px)" }
+        func string(_ pixels: Int) -> String {
+            switch self {
+            case .px: return "\(pixels)"
+            case .pt: return String(format: "%.0f", Double(pixels) / 2)
+            case .cm: return String(format: "%.2f", Double(pixels) / 96.0 * 2.54)
+            case .in: return String(format: "%.2f", Double(pixels) / 96.0)
+            }
+        }
+    }
     /// Sampled color readout.
     @Published public var sampledHex: String = "#3B5BFF"
     @Published public var sampledHSL: String = "H 227° S 100% L 61%"
@@ -30,7 +48,10 @@ public final class CaliperViewModel: ObservableObject {
     /// Width × height of the current measurement guide, in pixels.
     public var measuredWidth: Int { abs(endX - startX) }
     public var measuredHeight: Int { abs(endY - startY) }
-    public var measuredLabel: String { "\(measuredWidth) × \(measuredHeight) px" }
+    /// The current width/height formatted in the selected unit (number only).
+    public func widthString() -> String { unit.string(measuredWidth) }
+    public func heightString() -> String { unit.string(measuredHeight) }
+    public var measuredLabel: String { "\(widthString()) × \(heightString()) \(unit.rawValue)" }
 
     /// Set the image to measure and recompute edges.
     public func setTarget(_ image: NSImage) {
@@ -49,18 +70,21 @@ public final class CaliperViewModel: ObservableObject {
     }
 
     /// Snap each measurement endpoint to the nearest detected boundary.
-    public func snapEndpoints() {
+    /// `maxDistance` bounds how far an endpoint may jump — small for the gentle
+    /// auto-snap while dragging, very large for an explicit "Snap now" so the
+    /// button always pulls endpoints to the nearest real edge.
+    public func snapEndpoints(maxDistance: Int = 12) {
         guard snapEnabled else { return }
-        if let s = engine.nearestSnap(to: startX, in: snapLines.verticalX), s != startX {
+        if let s = engine.nearestSnap(to: startX, in: snapLines.verticalX, maxDistance: maxDistance), s != startX {
             AppLog.info("snapped \(startX)→\(s)", category: "snap"); startX = s
         }
-        if let e = engine.nearestSnap(to: endX, in: snapLines.verticalX), e != endX {
+        if let e = engine.nearestSnap(to: endX, in: snapLines.verticalX, maxDistance: maxDistance), e != endX {
             AppLog.info("snapped \(endX)→\(e)", category: "snap"); endX = e
         }
-        if let s = engine.nearestSnap(to: startY, in: snapLines.horizontalY), s != startY {
+        if let s = engine.nearestSnap(to: startY, in: snapLines.horizontalY, maxDistance: maxDistance), s != startY {
             AppLog.info("snapped \(startY)→\(s)", category: "snap"); startY = s
         }
-        if let e = engine.nearestSnap(to: endY, in: snapLines.horizontalY), e != endY {
+        if let e = engine.nearestSnap(to: endY, in: snapLines.horizontalY, maxDistance: maxDistance), e != endY {
             AppLog.info("snapped \(endY)→\(e)", category: "snap"); endY = e
         }
     }

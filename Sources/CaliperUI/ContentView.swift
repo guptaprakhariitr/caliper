@@ -30,7 +30,7 @@ public struct ContentView: View {
                 // clipping at the default window size.
                 Button { openPanel() } label: { Image(systemName: "folder") }
                     .help("Open a screenshot to measure (⌘O)")
-                Button { vm.snapEndpoints() } label: { Image(systemName: "wand.and.stars") }
+                Button { vm.snapEndpoints(maxDistance: 100_000) } label: { Image(systemName: "wand.and.stars") }
                     .help("Snap the measurement endpoints to the nearest detected element edges")
                     .disabled(!vm.snapEnabled)
                 Toggle(isOn: $vm.snapEnabled) { Image(systemName: "ruler") }
@@ -70,8 +70,12 @@ public struct ContentView: View {
                     .font(DS.Font.caption).foregroundStyle(DS.Color.secondaryLabel)
 
                 group("Measurement") {
-                    row("Width", "\(vm.measuredWidth) px")
-                    row("Height", "\(vm.measuredHeight) px")
+                    Picker("Unit", selection: $vm.unit) {
+                        ForEach(CaliperViewModel.MeasureUnit.allCases) { u in Text(u.label).tag(u) }
+                    }
+                    .labelsHidden()
+                    row("Width", "\(vm.widthString()) \(vm.unit.rawValue)")
+                    row("Height", "\(vm.heightString()) \(vm.unit.rawValue)")
                 }
                 group("Endpoints (px)") {
                     stepper("Start X", value: $vm.startX)
@@ -81,7 +85,7 @@ public struct ContentView: View {
                 }
                 group("Auto edge-snap") {
                     Toggle(isOn: $vm.snapEnabled) { Text("Snap endpoints to element edges") }
-                    Button("Snap now") { vm.snapEndpoints() }
+                    Button("Snap now") { vm.snapEndpoints(maxDistance: 100_000) }
                         .buttonStyle(.dsPrimary).disabled(!vm.snapEnabled)
                     Text("\(vm.snapLines.verticalX.count) vertical · \(vm.snapLines.horizontalY.count) horizontal edges")
                         .font(DS.Font.caption).foregroundStyle(DS.Color.tertiaryLabel)

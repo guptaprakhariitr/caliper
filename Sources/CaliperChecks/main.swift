@@ -6,55 +6,107 @@ import EdgeEngine
 import CaliperUI
 import ScreenshotKit
 
-/// Consistent Plainware App Store marketing hero (typographic; ImageRenderer-safe —
-/// only gradients/shapes/Text, no blur/shadow). Shared layout across all 5 apps;
-/// each app supplies its own name, tagline, benefit bullets and accent color.
-struct HeroShot: View {
-    let appName: String
-    let tagline: String
-    let bullets: [String]
-    let accent: Color
+let picaAccent = Color(red: 0.231, green: 0.357, blue: 1.0)
+
+/// PicaMac product visual — the real overlay reproduced for store shots: a design
+/// canvas with a sample app being measured (dimension guide + badge), dashed
+/// auto-snap edge lines, a pixel loupe and a hex/HSL color readout. Fills width
+/// `w`; all metrics scale off it. ImageRenderer-safe (shapes/Text only).
+struct PicaCanvas: View {
+    var w: CGFloat
+    var highlight: Highlight = .all
+    enum Highlight { case all, snap, color }
+    private func s(_ v: CGFloat) -> CGFloat { v * w / 1120 }
 
     var body: some View {
         ZStack {
-            LinearGradient(colors: [Color(white: 0.12), Color(white: 0.035)],
-                           startPoint: .topLeading, endPoint: .bottomTrailing)
-            RadialGradient(colors: [accent.opacity(0.30), .clear],
-                           center: .topTrailing, startRadius: 40, endRadius: 1300)
-            VStack(alignment: .leading, spacing: 0) {
-                Text("PLAINWARE")
-                    .font(.system(size: 26, weight: .bold)).tracking(8)
-                    .foregroundStyle(accent)
-                Spacer().frame(height: 40)
-                Text(appName)
-                    .font(.system(size: 150, weight: .heavy)).foregroundStyle(.white)
-                Spacer().frame(height: 24)
-                Text(tagline)
-                    .font(.system(size: 56, weight: .semibold))
-                    .foregroundStyle(.white.opacity(0.92))
-                    .fixedSize(horizontal: false, vertical: true)
-                Spacer().frame(height: 48)
-                VStack(alignment: .leading, spacing: 26) {
-                    ForEach(bullets, id: \.self) { b in
-                        HStack(spacing: 20) {
-                            ZStack {
-                                Circle().fill(accent).frame(width: 38, height: 38)
-                                Text("✓").font(.system(size: 20, weight: .bold)).foregroundStyle(.white)
-                            }
-                            Text(b).font(.system(size: 36)).foregroundStyle(.white.opacity(0.88))
+            Color(white: 0.13)
+            // the design being measured
+            sampleApp
+                .frame(width: s(560), height: s(360))
+                .position(x: s(380), y: s(330))
+
+            // auto-snap dashed edge lines on the sample's left/right edges
+            if highlight != .color {
+                ForEach([s(100), s(660)], id: \.self) { x in
+                    Path { p in p.move(to: CGPoint(x: x, y: s(120))); p.addLine(to: CGPoint(x: x, y: s(540))) }
+                        .stroke(picaAccent, style: StrokeStyle(lineWidth: s(2), dash: [s(7), s(5)]))
+                }
+            }
+            // horizontal dimension guide + badge
+            dimensionGuide.position(x: s(380), y: s(132))
+            // pixel loupe + color chip cluster (right)
+            VStack(spacing: s(16)) {
+                loupe
+                colorChip
+            }
+            .position(x: s(940), y: s(300))
+        }
+        .frame(width: w, height: w * 600 / 1120)
+        .clipped()
+    }
+
+    private var sampleApp: some View {
+        VStack(alignment: .leading, spacing: s(14)) {
+            RoundedRectangle(cornerRadius: s(6)).fill(picaAccent).frame(width: s(180), height: s(22))
+            ForEach(0..<4, id: \.self) { i in
+                RoundedRectangle(cornerRadius: s(5)).fill(Color(white: 0.82))
+                    .frame(width: [s(420), s(330), s(390), s(300)][i], height: s(13))
+            }
+            Spacer().frame(height: s(6))
+            RoundedRectangle(cornerRadius: s(12)).fill(picaAccent).frame(width: s(220), height: s(60))
+        }
+        .padding(s(22))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(RoundedRectangle(cornerRadius: s(14)).fill(.white))
+    }
+
+    private var dimensionGuide: some View {
+        VStack(spacing: s(8)) {
+            Text("560 × 360 px")
+                .font(.system(size: s(17), weight: .semibold, design: .monospaced))
+                .foregroundStyle(.white)
+                .padding(.horizontal, s(12)).padding(.vertical, s(6))
+                .background(Capsule().fill(picaAccent))
+            ZStack {
+                Rectangle().fill(picaAccent).frame(width: s(560), height: s(2))
+                HStack { Rectangle().fill(picaAccent).frame(width: s(2), height: s(16)); Spacer(); Rectangle().fill(picaAccent).frame(width: s(2), height: s(16)) }
+                    .frame(width: s(560))
+            }
+        }
+    }
+
+    private var loupe: some View {
+        ZStack {
+            Circle().fill(.white).frame(width: s(120), height: s(120))
+                .overlay(Circle().strokeBorder(picaAccent, lineWidth: s(4)))
+            VStack(spacing: 0) {
+                ForEach(0..<6, id: \.self) { r in
+                    HStack(spacing: 0) {
+                        ForEach(0..<6, id: \.self) { c in
+                            Rectangle().fill((r + c) == 5 ? picaAccent : picaAccent.opacity(0.45 + Double((r * 6 + c) % 4) * 0.13))
+                                .frame(width: s(17), height: s(17))
                         }
                     }
                 }
-                Spacer()
-                HStack(spacing: 14) {
-                    RoundedRectangle(cornerRadius: 3).fill(accent).frame(width: 60, height: 8)
-                    Text("100% on-device  ·  Free & open source  ·  macOS")
-                        .font(.system(size: 28, weight: .medium)).foregroundStyle(.white.opacity(0.6))
-                }
-            }
-            .padding(150)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+            }.clipShape(Circle())
+            Rectangle().fill(.white).frame(width: s(18), height: s(2))
+            Rectangle().fill(.white).frame(width: s(2), height: s(18))
         }
+        .overlay(alignment: .bottom) {
+            if highlight == .color {
+                Circle().strokeBorder(picaAccent, lineWidth: s(3)).frame(width: s(132), height: s(132))
+            }
+        }
+    }
+
+    private var colorChip: some View {
+        HStack(spacing: s(10)) {
+            RoundedRectangle(cornerRadius: s(5)).fill(picaAccent).frame(width: s(26), height: s(26))
+            Text("#3B5BFF").font(.system(size: s(17), weight: .medium, design: .monospaced)).foregroundStyle(.white)
+        }
+        .padding(.horizontal, s(14)).padding(.vertical, s(9))
+        .background(Capsule().fill(Color(white: 0.08)))
     }
 }
 
@@ -103,33 +155,36 @@ MainActor.assumeIsolated {
     check(near([vm.startY], 30) && near([vm.endY], 90), "y endpoints snapped near 30 & 90")
 }
 
-// MARK: Render real screenshots off-screen (no screen-recording permission)
+// MARK: Render App Store screenshots off-screen (no screen-recording permission)
 section("Screenshots")
 let outDir = URL(fileURLWithPath: CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "./screenshots")
+let theme = StoreTheme.dark(picaAccent)
+let shotSize = ViewSnapshotter.StoreSize.s2560x1600.pixels
+let cw = shotSize.width / 1440 * 1120   // content width inside the window frame
 
 MainActor.assumeIsolated {
-    // 1) The product hero / measuring scene (ImageRenderer-safe).
-    let scene = ScreenshotScene(sizeLabel: "240 × 64 px", hex: "#3B5BFF")
-    do {
-        let url = outDir.appendingPathComponent("01-measuring.png")
-        try ViewSnapshotter.renderStoreShot(scene, size: .s1440x900, to: url)
-        check(FileManager.default.fileExists(atPath: url.path), "rendered measuring scene → \(url.lastPathComponent)")
-    } catch { check(false, "measuring scene render: \(error)") }
-
-    // 2) A marketing hero (consistent Plainware theme).
-    let hero = HeroShot(
-        appName: "PicaMac",
-        tagline: "Measure any pixel.\nSnap to real edges.",
-        bullets: ["Real on-device auto edge-snap",
-                  "Loupe + hex / HSL color picker",
-                  "Works on any window or region"],
-        accent: Color(red: 0.231, green: 0.357, blue: 1.0)
-    )
-    do {
-        let url = outDir.appendingPathComponent("02-marketing.png")
-        try ViewSnapshotter.renderStoreShot(hero, size: .s2560x1600, to: url)
-        check(FileManager.default.fileExists(atPath: url.path), "rendered marketing hero → \(url.lastPathComponent)")
-    } catch { check(false, "marketing render: \(error)") }
+    @MainActor func shot<V: View>(_ name: String, _ view: V) {
+        do {
+            let url = outDir.appendingPathComponent(name)
+            try ViewSnapshotter.renderPNG(view, size: shotSize, scale: 1.0, to: url)
+            check(FileManager.default.fileExists(atPath: url.path), "rendered \(name)")
+        } catch { check(false, "\(name): \(error)") }
+    }
+    shot("01-hero.png", FeatureShot(
+        theme: theme, tag: "Plainware",
+        headline: "Measure any pixel.\nSnap to real edges.",
+        subhead: "A precise on-screen ruler that locks onto real UI edges — with a pixel loupe and a hex / HSL color picker.",
+        windowTitle: "PicaMac", size: shotSize) { PicaCanvas(w: cw, highlight: .all) })
+    shot("02-snap.png", FeatureShot(
+        theme: theme,
+        headline: "Locks onto true edges",
+        subhead: "Drag near any element and the guide snaps to its exact pixel boundary — no more eyeballing.",
+        windowTitle: "PicaMac", size: shotSize) { PicaCanvas(w: cw, highlight: .snap) })
+    shot("03-color.png", FeatureShot(
+        theme: theme,
+        headline: "Loupe + color picker",
+        subhead: "Zoom into pixels and read the exact hex / HSL value anywhere on screen.",
+        windowTitle: "PicaMac", size: shotSize) { PicaCanvas(w: cw, highlight: .color) })
 }
 
 print("\n" + (failures == 0 ? "✅ ALL CHECKS PASSED" : "❌ \(failures) FAILED"))

@@ -1,6 +1,6 @@
 # Contributing to PicaMac
 
-Thanks for your interest! PicaMac is the open-source **shell** of a macOS pixel ruler, loupe and color picker. The UI, view model and app plumbing live here under the MIT license; the edge-detection/snapping **engine** is a separate proprietary module shipped as a binary in public releases (it builds from source in this private repo).
+Thanks for your interest! PicaMac is an open-source (AGPL-3.0) macOS pixel ruler, loupe and color picker. The whole app — UI, view model, app plumbing and the edge-detection/snapping engine — lives here and builds entirely from source. Contributions are welcome.
 
 ## Project layout
 
@@ -8,7 +8,7 @@ Thanks for your interest! PicaMac is the open-source **shell** of a macOS pixel 
 Sources/Caliper       @main app target
 Sources/CaliperUI     SwiftUI overlay/measuring UI (contributions welcome here)
 Sources/CaliperChecks CLT-runnable test/screenshot harness
-Engines/EdgeEngine    proprietary engine (binary in OSS release)
+Engines/EdgeEngine    edge detection, snapping, color conversion
 Packages/Core         shared modules (vendored)
 ```
 

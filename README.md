@@ -8,7 +8,7 @@ Draw a precise measurement guide over any UI, magnify pixels with a loupe, and r
 
 A free, native macOS replacement for paid pixel rulers and color pickers.
 
-![PicaMac — measuring with auto edge-snap](docs/images/01-measuring.png)
+![PicaMac](docs/images/hero.png)
 
 </div>
 
@@ -44,14 +44,14 @@ PicaMac runs a Sobel gradient edge detector over the captured pixels, accumulate
 
 ## Architecture
 
-PicaMac is an **open-source shell** + a **proprietary engine** (`EdgeEngine`). In public releases the engine ships as a precompiled binary; in this repository it builds from source.
+PicaMac builds entirely from source. The app is a SwiftUI shell on top of a small set of focused modules.
 
 > The app ships as **PicaMac** (display name + App Store listing). The Swift package, modules, bundle ID (`com.plainware.caliper`) and the on-disk targets below keep the original `Caliper` name, so existing identifiers and Firebase config are unchanged.
 
 ```
 Sources/Caliper      executable (@main)   — app entry, menus, settings, logging bootstrap
-Sources/CaliperUI    library (OSS)        — overlay/measuring UI + view model
-Engines/EdgeEngine   library (proprietary)— edge detection, snapping, color conversion
+Sources/CaliperUI    library              — overlay/measuring UI + view model
+Engines/EdgeEngine   library              — edge detection, snapping, color conversion
 Packages/Core        shared modules       — DesignSystem, RemoteConfigKit, LicenseKit, UpdateKit, LogKit, ScreenshotKit
 ```
 
@@ -69,15 +69,32 @@ struct EdgeEngine: Sendable {
 }
 ```
 
-- **Feature flags** (paid features, in-app updates, force-update) are built but **gated OFF** via Firebase Remote Config (`RemoteConfigKit`) and flipped on later with no app update. `GoogleService-Info.plist` is **not** committed.
+- **Feature flags** (paid features, in-app updates, force-update) are built but **gated OFF** via Firebase Remote Config (`RemoteConfigKit`) and flipped on later with no app update. `GoogleService-Info.plist` is gitignored, and the app **fails open** (runs normally with default flags) when it is absent.
 - **Logging**: every run writes to `~/Library/Containers/com.plainware.caliper/Data/Library/Logs/Plainware/PicaMac.log` (sandboxed) — `tail -f` it to debug.
 
-## Build & run (no Xcode required)
+## Build & run
+
+The dev loop needs only the Swift toolchain (Command Line Tools) — no Xcode required.
+
+Build the app bundle and launch it:
 
 ```bash
 Scripts/bundle.sh --package-dir . --product Caliper --name Caliper \
   --bundle-id com.plainware.caliper --info-plist Resources/Info.plist \
   --entitlements Resources/Caliper.entitlements --icon Resources/AppIcon.icns --open
+```
+
+Or build the package directly:
+
+```bash
+swift build
+```
+
+To work in Xcode, generate the project with [XcodeGen](https://github.com/yonaskolb/XcodeGen) and open it:
+
+```bash
+xcodegen generate
+open Caliper.xcodeproj
 ```
 
 Run the test suite + regenerate the gallery / App Store screenshots (off-screen, no permissions):
@@ -86,8 +103,6 @@ Run the test suite + regenerate the gallery / App Store screenshots (off-screen,
 swift run CaliperChecks ./screenshots
 ```
 
-For the **Mac App Store** build/submission, see [`docs/APP_STORE_SUBMISSION.md`](docs/APP_STORE_SUBMISSION.md).
-
 ## License
 
-App shell: **MIT** (see [`LICENSE`](LICENSE)). The `EdgeEngine` module is proprietary and distributed in binary form in public releases.
+Licensed under the GNU Affero General Public License v3.0 (AGPL-3.0) — see [LICENSE](LICENSE). © 2026 Prakhar Gupta.

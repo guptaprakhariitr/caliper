@@ -160,6 +160,24 @@ final class CaliperUITests: XCTestCase {
 
     // MARK: Load Sample / Open (⌘N / ⌘O) → setTarget recomputes snap lines
 
+    // MARK: Launch splash flag
+
+    func testSplashStartsShownAndDismisses() {
+        let model = SplashModel()
+        XCTAssertTrue(model.showSplash, "splash must start visible on launch")
+        model.dismiss()
+        XCTAssertFalse(model.showSplash, "dismiss() must hide the splash")
+        // Idempotent: dismissing again stays hidden.
+        model.dismiss()
+        XCTAssertFalse(model.showSplash)
+    }
+
+    func testSplashCarriesSpecTagline() {
+        XCTAssertEqual(SplashModel.tagline, "Measure anything on screen, to the pixel.")
+        XCTAssertEqual(SplashModel.meaning,
+                       "A pixel ruler + color picker that snaps to on-screen UI edges.")
+    }
+
     func testSetTargetPopulatesSnapLines() {
         let vm = CaliperViewModel()
         XCTAssertTrue(vm.snapLines.verticalX.isEmpty)

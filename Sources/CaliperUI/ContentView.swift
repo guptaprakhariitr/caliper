@@ -6,6 +6,7 @@ import EdgeEngine
 
 public struct ContentView: View {
     @EnvironmentObject var vm: CaliperViewModel
+    @StateObject private var splash = SplashModel()
     @State private var isDropTargeted = false
     @State private var moveOrigin: (x: Int, y: Int, w: Int, h: Int)? = nil
     @State private var activeDrag: DragKind? = nil
@@ -14,6 +15,16 @@ public struct ContentView: View {
     public init() {}
 
     public var body: some View {
+        ZStack {
+            mainContent
+            if splash.showSplash {
+                SplashView(model: splash)
+                    .zIndex(1)
+            }
+        }
+    }
+
+    private var mainContent: some View {
         HSplitView {
             controls
                 .frame(width: 280)
@@ -66,7 +77,7 @@ public struct ContentView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: DS.Space.lg) {
                 Text("PicaMac").font(DS.Font.display)
-                Text("Measure, zoom and pick colors on screen.")
+                Text(SplashModel.tagline)
                     .font(DS.Font.caption).foregroundStyle(DS.Color.secondaryLabel)
                     .fixedSize(horizontal: false, vertical: true)
 

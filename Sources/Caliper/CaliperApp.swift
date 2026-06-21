@@ -57,7 +57,7 @@ struct CaliperApp: App {
             VStack(spacing: 16) {
                 AboutView(appName: "PicaMac",
                           version: Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.1.0",
-                          tagline: "On-screen ruler, loupe & color picker with auto edge-snap.",
+                          tagline: "Measure anything on screen, to the pixel.",
                           replaces: "paid pixel rulers and color pickers")
                 LicenseSettingsView(license: license, remote: remote)
             }
@@ -91,7 +91,7 @@ private struct RootView: View {
             .sheet(isPresented: $showOnboarding) {
                 OnboardingView(
                     appName: "PicaMac",
-                    tagline: "Measure anything on screen — pixel-perfect.",
+                    tagline: "Measure anything on screen, to the pixel.",
                     glyph: "ruler.fill",
                     accent: Color(red: 0.55, green: 0.35, blue: 0.85),
                     steps: [

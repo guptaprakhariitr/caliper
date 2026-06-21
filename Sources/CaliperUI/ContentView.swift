@@ -57,7 +57,7 @@ public struct ContentView: View {
     private func copyResult() {
         let pb = NSPasteboard.general
         pb.clearContents()
-        pb.setString(vm.measuredLabel, forType: .string)
+        pb.setString(vm.copyString(), forType: .string)
     }
 
     // MARK: Controls
@@ -68,6 +68,7 @@ public struct ContentView: View {
                 Text("PicaMac").font(DS.Font.display)
                 Text("Measure, zoom and pick colors on screen.")
                     .font(DS.Font.caption).foregroundStyle(DS.Color.secondaryLabel)
+                    .fixedSize(horizontal: false, vertical: true)
 
                 group("Measurement") {
                     Picker("Unit", selection: $vm.unit) {
@@ -89,6 +90,7 @@ public struct ContentView: View {
                         .buttonStyle(.dsPrimary).disabled(!vm.snapEnabled)
                     Text("\(vm.snapLines.verticalX.count) vertical · \(vm.snapLines.horizontalY.count) horizontal edges")
                         .font(DS.Font.caption).foregroundStyle(DS.Color.tertiaryLabel)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 group("Color") {
                     HStack {
@@ -99,8 +101,13 @@ public struct ContentView: View {
                                 .strokeBorder(DS.Color.separator, lineWidth: 1))
                         VStack(alignment: .leading, spacing: 2) {
                             Text(vm.sampledHex).font(DS.Font.mono)
+                                .textSelection(.enabled)
+                                .lineLimit(1).truncationMode(.middle)
                             Text(vm.sampledHSL).font(DS.Font.caption).foregroundStyle(DS.Color.secondaryLabel)
+                                .textSelection(.enabled)
+                                .lineLimit(1).truncationMode(.tail)
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
                 Spacer(minLength: 0)
@@ -117,7 +124,14 @@ public struct ContentView: View {
     }
 
     private func row(_ label: String, _ value: String) -> some View {
-        HStack { Text(label).font(DS.Font.body); Spacer(); Text(value).font(DS.Font.mono) }
+        HStack {
+            Text(label).font(DS.Font.body)
+            Spacer(minLength: DS.Space.sm)
+            Text(value).font(DS.Font.mono)
+                .lineLimit(1).truncationMode(.middle)
+                .minimumScaleFactor(0.7)
+                .textSelection(.enabled)
+        }
     }
 
     private func stepper(_ label: String, value: Binding<Int>) -> some View {
@@ -154,6 +168,7 @@ public struct ContentView: View {
                         .font(DS.Font.title)
                         .foregroundStyle(DS.Color.secondaryLabel)
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                     Button { openPanel() } label: {
                         Label("Open Screenshot…", systemImage: "folder")
                     }

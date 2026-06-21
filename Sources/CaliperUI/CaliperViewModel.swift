@@ -53,6 +53,10 @@ public final class CaliperViewModel: ObservableObject {
     public func heightString() -> String { unit.string(measuredHeight) }
     public var measuredLabel: String { "\(widthString()) × \(heightString()) \(unit.rawValue)" }
 
+    /// Exact string the Copy control places on the pasteboard. Extracted so the
+    /// copy flow is testable without driving AppKit's NSPasteboard.
+    public func copyString() -> String { measuredLabel }
+
     /// Set the image to measure and recompute edges.
     public func setTarget(_ image: NSImage) {
         target = image

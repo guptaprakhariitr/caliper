@@ -45,5 +45,10 @@ let package = Package(
             ],
             path: "Sources/CaliperChecks"
         ),
+        .testTarget(
+            name: "CaliperUITests",
+            dependencies: ["CaliperUI", "EdgeEngine"],
+            path: "Tests/CaliperUITests"
+        ),
     ]
 )

@@ -7,6 +7,7 @@ import LicenseKit
 import VersionGateKit
 import CommonUI
 import LogKit
+import UpdateKit
 import UniformTypeIdentifiers
 
 @main
@@ -16,6 +17,7 @@ struct CaliperApp: App {
     @StateObject private var license = LicenseStore(verifier: nil, productID: "caliper")
     @StateObject private var versionGate = VersionGate.fromBundle(appKey: "caliper")
         ?? VersionGate(projectId: "", apiKey: "", appKey: "caliper", currentBuild: 0, currentVersion: "0")
+    @StateObject private var updater = GitHubReleaseUpdater.fromBundle(owner: "guptaprakhariitr", repo: "caliper")
 
     init() {
         AppLog.bootstrap(appName: "PicaMac",
@@ -32,6 +34,7 @@ struct CaliperApp: App {
             RootView()
                 .environmentObject(vm)
                 .versionGate(versionGate)
+                .gitHubUpdatePrompt(updater)
                 .onAppear {
                     AppLog.info("main window shown", category: "ui")
                     if vm.target == nil { vm.setTarget(SampleImage.make()) }
@@ -40,10 +43,15 @@ struct CaliperApp: App {
                         AppLog.info("remote config refreshed — paid=\(remote.paidEnabled) updates=\(remote.updatesEnabled)", category: "config")
                     }
                     Task { await versionGate.check() }
+                    updater.checkOnLaunch()
                 }
         }
         .windowStyle(.titleBar)
         .commands {
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") { updater.checkForUpdates() }
+                    .disabled(!updater.canCheckForUpdates)
+            }
             CommandGroup(replacing: .newItem) {
                 Button("Open Screenshot…") { openImage() }.keyboardShortcut("o")
                 Button("Load Sample UI") { vm.setTarget(SampleImage.make()) }.keyboardShortcut("n")
